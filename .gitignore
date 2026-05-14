@@ -1,0 +1,23 @@
+# Default ignored files
+/shelf/
+/workspace.xml
+
+# Виртуальное окружение
+djenvv/
+
+# Настройки IDE (PyCharm / IntelliJ)
+.idea/
+
+# Кэши Python и типов
+__pycache__/
+*.pyc
+.mypy_cache/
+.pytest_cache/
+
+# Файлы окружения с секретами
+.env
+*.local
+
+# Логи и временные файлы
+*.log
+*.tmp

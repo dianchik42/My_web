@@ -1,0 +1,7 @@
+{% extends 'sites/base.html' %}
+{% block content %}
+<h1>{{ material.title }}</h1>
+<p>Категория: {{ material.category }}</p>
+<p>Автор: {{ material.author }}</p>
+<p>{{ material.content|linebreaks }}</p>
+{% endblock %}

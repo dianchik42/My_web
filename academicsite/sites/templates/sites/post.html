@@ -1,0 +1,11 @@
+{% extends 'sites/base.html' %}
+
+{% block content %}
+<h1>{{ post.title }}</h1>
+
+{% autoescape off %}
+<p>{{ post.content|linebreaks }}</p>
+{% endautoescape %}
+
+<p><a href="{% url 'home' %}">Назад к списку</a></p>
+{% endblock %}

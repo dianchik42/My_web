@@ -1,0 +1,20 @@
+{% extends 'sites/base.html' %}
+
+{% block content %}
+<h1>{{ title }}</h1>
+
+<ul>
+    {% for p in posts %}
+        {% if p.is_published %}
+        <li>
+            <h2>{{ p.title }}</h2>
+            <p>{{ p.content|linebreaks|truncatewords:50 }}</p>
+            <p><a href="{{ p.get_absolute_url }}">Читать пост</a></p>
+            {% if not forloop.last %}
+                <hr>
+            {% endif %}
+        </li>
+        {% endif %}
+    {% endfor %}
+</ul>
+{% endblock %}
