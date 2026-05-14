@@ -3,7 +3,7 @@
 /workspace.xml
 
 # Виртуальное окружение
-djenvv/
+djvenv/
 
 # Настройки IDE (PyCharm / IntelliJ)
 .idea/
