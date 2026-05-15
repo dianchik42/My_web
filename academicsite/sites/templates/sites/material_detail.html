@@ -1,7 +1,42 @@
-{% extends 'sites/base.html' %}
+{% extends 'base.html' %}
+
 {% block content %}
-<h1>{{ material.title }}</h1>
-<p>Категория: {{ material.category }}</p>
-<p>Автор: {{ material.author }}</p>
-<p>{{ material.content|linebreaks }}</p>
+    <h1>{{ material.title }}</h1>
+    
+    <div class="article-panel">
+        <p>Категория: <a href="{% url 'category' material.cat.slug %}">{{ material.cat.name }}</a></p>
+        <p>Автор: {{ material.author|default:"Не указан" }}</p>
+        <p>Создано: {{ material.time_create|date:"d-m-Y H:i" }}</p>
+        <p>Просмотров: {{ material.views_count }}</p>
+    </div>
+    
+    <!-- вывод тегов -->
+    {% with material.tags.all as tags %}
+        {% if tags %}
+            <div class="tags-list">
+                <strong>Теги:</strong>
+                {% for t in tags %}
+                    <a href="{% url 'tag' t.slug %}">{{ t.tag }}</a>{% if not forloop.last %}, {% endif %}
+                {% endfor %}
+            </div>
+        {% endif %}
+    {% endwith %}
+    
+    <!-- Дополнительная информация (OneToOne) -->
+    {% if material.extra_info %}
+        <div class="extra-info">
+            <h3>Дополнительная информация:</h3>
+            <ul>
+                <li>Сложность: {{ material.extra_info.difficulty_level|default:"Не указана" }}</li>
+                <li>Длительность: {{ material.extra_info.duration_minutes|default:"Не указана" }} мин.</li>
+                <li>Скачиваний: {{ material.extra_info.downloads_count }}</li>
+            </ul>
+        </div>
+    {% endif %}
+    
+    <div class="content-text">
+        {{ material.content|linebreaks }}
+    </div>
+    
+    <p><a href="{% url 'home' %}">← Назад к списку</a></p>
 {% endblock %}

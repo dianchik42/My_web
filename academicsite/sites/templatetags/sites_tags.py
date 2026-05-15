@@ -1,15 +1,23 @@
 from django import template
-from sites import views
+from django.db.models import Count
+from sites.models import Category, TagPost
 
 register = template.Library()
 
-# Простой тег - возвращает список категорий
-@register.simple_tag()
-def get_categories():
-    return views.cats_db
-
-# Включающий тег - возвращает HTML с категориями
 @register.inclusion_tag('sites/list_categories.html')
 def show_categories(cat_selected=0):
-    cats = views.cats_db
+    # Только категории, у которых есть хотя бы один опубликованный материал
+    cats = Category.objects.annotate(total=Count('materials')).filter(
+        total__gt=0,
+        materials__is_published=1
+    ).distinct()
     return {'cats': cats, 'cat_selected': cat_selected}
+
+@register.inclusion_tag('sites/list_tags.html')
+def show_tags():
+    # Только теги, у которых есть хотя бы один опубликованный материал
+    tags = TagPost.objects.annotate(total=Count('materials')).filter(
+        total__gt=0,
+        materials__is_published=1
+    ).distinct()
+    return {'tags': tags}

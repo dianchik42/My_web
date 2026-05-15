@@ -1,8 +1,9 @@
-from django.shortcuts import redirect, render
+from django.shortcuts import redirect, render, get_object_or_404
 from django.http import HttpResponse, HttpResponseNotFound, HttpResponseRedirect
 from django.views.decorators.http import require_http_methods
-from .models import Material
-from django.shortcuts import get_object_or_404
+from django.db.models import Q, F, Count, Avg, Max, Min, Sum, Value
+from django.db.models.functions import Length
+from .models import Material, Category, TagPost, MaterialExtraInfo
 
 # Данные для меню
 menu = [
@@ -15,30 +16,15 @@ menu = [
     {'title': 'Войти', 'url_name': 'login'},
 ]
 
-# Рубрики
-cats_db = [
-    {'id': 1, 'name': 'Математика'},
-    {'id': 2, 'name': 'Русский язык'},
-    {'id': 3, 'name': 'Литература'},
-    {'id': 4, 'name': 'История'},
-    {'id': 5, 'name': 'Обществознание'},
-    {'id': 6, 'name': 'Физика'},
-    {'id': 7, 'name': 'Химия'},
-    {'id': 8, 'name': 'Биология'},
-    {'id': 9, 'name': 'Информатика'},
-    {'id': 10, 'name': 'Иностранные языки'},
-    {'id': 11, 'name': 'Начальная школа'},
-    {'id': 12, 'name': 'Внеурочная деятельность'},
-]
-
 
 def index(request):
     """Главная страница"""
-    posts = Material.objects.filter(is_published=Material.Status.PUBLISHED)
+    posts = Material.published.all().select_related('cat').prefetch_related('tags')
     data = {
         'title': 'Главная страница',
         'menu': menu,
         'posts': posts,
+        'cat_selected': 0,
     }
     return render(request, 'sites/index.html', context=data)
 
@@ -68,26 +54,47 @@ def login(request):
     return HttpResponse("Авторизация")
 
 
-def show_category(request, cat_id):
-    """Отображение статей по категории"""
-    posts = Material.objects.filter(is_published=Material.Status.PUBLISHED)
+# отображение по категориям
+def show_category(request, cat_slug):
+    """Отображение материалов по категории"""
+    category = get_object_or_404(Category, slug=cat_slug)
+    posts = Material.published.filter(cat=category)
     data = {
-        'title': 'Отображение по рубрики/категории',
+        'title': f'Категория: {category.name}',
         'menu': menu,
         'posts': posts,
-        'cat_selected': cat_id,
+        'cat_selected': category.pk,
     }
     return render(request, 'sites/index.html', context=data)
 
+def show_tag(request, tag_slug):
+    """Отображение материалов по тегу"""
+    tag = get_object_or_404(TagPost, slug=tag_slug)
+    posts = tag.materials.filter(is_published=Material.Status.PUBLISHED)
+    data = {
+        'title': f'Тег: {tag.tag}',
+        'menu': menu,
+        'posts': posts,
+        'cat_selected': None,
+    }
+    return render(request, 'sites/index.html', context=data)
 
 def show_material(request, material_slug):
+    """Отображение отдельного материала"""
     material = get_object_or_404(Material, slug=material_slug, is_published=Material.Status.PUBLISHED)
-    return render(request, 'sites/material_detail.html', {'material': material})
+    material.increment_views()
+    data = {
+        'material': material,
+        'title': material.title,
+        'menu': menu,
+        'cat_selected': material.cat.pk,
+    }
+    return render(request, 'sites/material_detail.html', context=data)
 
 
 def materials(request):
     """Страница со всеми учебными материалами"""
-    posts = Material.objects.filter(is_published=Material.Status.PUBLISHED)
+    posts = Material.published.all().select_related('cat').prefetch_related('tags')
     data = {
         'title': 'Учебные материалы',
         'menu': menu,
@@ -99,7 +106,7 @@ def materials(request):
 
 def methodology(request):
     """Страница с методическими пособиями"""
-    posts = Material.published.all()
+    posts = Material.published.all().select_related('cat').prefetch_related('tags')
     data = {
         'title': 'Методические пособия',
         'menu': menu,
@@ -111,7 +118,7 @@ def methodology(request):
 
 def for_teachers(request):
     """Страница для учителей"""
-    posts = Material.published.all()
+    posts = Material.published.all().select_related('cat').prefetch_related('tags')
     data = {
         'title': 'Для учителей',
         'menu': menu,
@@ -120,8 +127,13 @@ def for_teachers(request):
     }
     return render(request, 'sites/index.html', context=data)
 
-# ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ
 
+def orm_examples(request):
+    """Страница для демонстрации ORM-методов"""
+    return HttpResponse("ORM примеры")
+
+
+# ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ
 def article_detail(request, article_id):
     return HttpResponse(f"Статья №{article_id}")
 

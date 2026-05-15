@@ -25,9 +25,11 @@
         {% else %}
             <li><a href="{% url 'home' %}">Все категории</a></li>
         {% endif %}
-
         {% show_categories cat_selected %}
     </ul>
+
+    <!-- НОВОЕ: вывод тегов -->
+    {% show_tags %}
 
     <!-- Основной контент -->
     <div class="content">
