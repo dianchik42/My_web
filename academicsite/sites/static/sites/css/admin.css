@@ -1,0 +1,48 @@
+#header {
+    background: #811b24;
+    color: #ecf0f1;
+}
+
+#header a {
+    color: #ecf0f1;
+}
+
+#header a:hover {
+    color: #34db7a;
+}
+
+.module caption {
+    background: #811b24;
+    color: white;
+}
+
+div.breadcrumbs {
+    background: #a52630;
+    color: white;
+}
+
+div.breadcrumbs a {
+    color: #3498db;
+}
+
+.button, input[type=submit], input[type=button], .submit-row input {
+    background: #9e242e;
+    color: white;
+}
+
+.button.default, input[type=submit].default, .submit-row input.default {
+    background: #27ae60;
+}
+
+a {
+    color: #811b24;
+}
+
+a:hover {
+    color: #3498db;
+}
+
+#changelist-filter h2 {
+    background: #169e3f;
+    color: white;
+}

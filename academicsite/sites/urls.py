@@ -1,4 +1,5 @@
-from django.urls import path, register_converter
+from django.urls import path, register_converter, include
+from django.contrib import admin
 from . import views, converters
 
 register_converter(converters.FourDigitYearConverter, 'year')
@@ -8,6 +9,7 @@ register_converter(converters.PositiveIntConverter, 'posint')
 urlpatterns = [
     # Основные страницы
     path('', views.index, name='home'),
+    path('admin/', admin.site.urls),
     path('about/', views.about, name='about'),
     path('material/<slug:material_slug>/', views.show_material, name='material'),
     path('methodology/', views.methodology, name='methodology'),
