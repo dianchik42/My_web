@@ -21,6 +21,7 @@ urlpatterns = [
     path('tag/<slug:tag_slug>/', views.show_tag, name='tag'),
     
     path('add-page/', views.addpage, name='add_page'),
+    path('upload/', views.upload_file, name='upload_file'),
 
     # ДИНАМИЧЕСКИЕ URL
     path('article/<int:article_id>/', views.article_detail, name='article_detail'),
@@ -42,6 +43,10 @@ urlpatterns = [
     # ОБРАБОТКА ИСКЛЮЧЕНИЙ
     path('article-safe/<int:article_id>/', views.get_article, name='article_safe'),
     path('divide/', views.safe_division, name='divide'),
+
+    # ФОРМЫ
+    path('add-material/', views.add_material, name='add_material'),
+    path('add-material-model/', views.add_material_model, name='add_material_model'),
 ]
 
 handler404 = 'sites.views.page_not_found'

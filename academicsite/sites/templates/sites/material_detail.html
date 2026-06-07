@@ -10,6 +10,12 @@
         <p>Просмотров: {{ material.views_count }}</p>
     </div>
     
+    {% if material.image %}
+        <div class="material-image">
+            <img src="{{ material.image.url }}" alt="{{ material.title }}" style="max-width: 100%; height: auto;">
+        </div>
+    {% endif %}
+
     <!-- вывод тегов -->
     {% with material.tags.all as tags %}
         {% if tags %}

@@ -1,5 +1,6 @@
 from django.contrib import admin
 from django.contrib import messages
+from django.utils.html import mark_safe
 from .models import Material, Category, TagPost, MaterialExtraInfo
 
 class ViewsCountFilter(admin.SimpleListFilter):
@@ -24,7 +25,7 @@ class ViewsCountFilter(admin.SimpleListFilter):
 
 @admin.register(Material)
 class MaterialAdmin(admin.ModelAdmin):
-    list_display = ('id', 'title', 'cat', 'is_published', 'time_create', 'views_count', 'short_content', 'title_length')
+    list_display = ('id', 'title', 'post_image', 'cat', 'is_published', 'time_create', 'views_count')
     list_display_links = ('id', 'title')
     ordering = ('-time_create', 'title')
     list_editable = ('is_published',)
@@ -33,13 +34,17 @@ class MaterialAdmin(admin.ModelAdmin):
     search_fields = ('title', 'cat__name', 'author', 'content')
     list_filter = ('is_published', 'cat', 'time_create', ViewsCountFilter)
     filter_horizontal = ('tags',)
-
+    
     fieldsets = (
         ('Основная информация', {
             'fields': ('title', 'slug', 'cat', 'author')
         }),
         ('Содержание', {
             'fields': ('short_description', 'content'),
+            'classes': ('wide',)
+        }),
+        ('Изображение', {
+            'fields': ('image', 'post_image_preview'),
             'classes': ('wide',)
         }),
         ('Публикация и статистика', {
@@ -51,24 +56,36 @@ class MaterialAdmin(admin.ModelAdmin):
             'classes': ('collapse',)
         }),
     )
-
-    readonly_fields = ('views_count',)
-
+    
+    readonly_fields = ('views_count', 'post_image_preview')
+    
     @admin.display(description="Краткое содержание")
     def short_content(self, obj):
         if len(obj.content) > 50:
             return obj.content[:50] + "..."
         return obj.content[:50]
-
+    
     @admin.display(description="Длина заголовка")
     def title_length(self, obj):
         return len(obj.title)
-
+    
+    @admin.display(description="Изображение")
+    def post_image(self, obj):
+        if obj.image:
+            return mark_safe(f'<img src="{obj.image.url}" width="50" height="50" style="border-radius: 5px;">')
+        return "Без фото"
+    
+    @admin.display(description="Превью изображения")
+    def post_image_preview(self, obj):
+        if obj.image:
+            return mark_safe(f'<img src="{obj.image.url}" width="200" style="border-radius: 5px;">')
+        return "Изображение не загружено"
+    
     @admin.action(description="Опубликовать выбранные материалы")
     def publish_selected(self, request, queryset):
         count = queryset.update(is_published=Material.Status.PUBLISHED)
         self.message_user(request, f"Опубликовано {count} материалов.", messages.SUCCESS)
-
+    
     @admin.action(description="Снять с публикации выбранные материалы")
     def unpublish_selected(self, request, queryset):
         count = queryset.update(is_published=Material.Status.DRAFT)

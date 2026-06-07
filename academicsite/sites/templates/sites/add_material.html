@@ -1,0 +1,87 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    <h1>{{ title }}</h1>
+    
+    {% if success_message %}
+        <div style="color: green; background: #d4edda; padding: 10px; border-radius: 5px; margin-bottom: 20px;">
+            {{ success_message }}
+        </div>
+    {% endif %}
+    
+    <form action="" method="post">
+        {% csrf_token %}
+        
+        {% for field in form %}
+            <div class="form-field {% if field.errors %}has-error{% endif %}">
+                <label class="form-label" for="{{ field.id_for_label }}">
+                    {{ field.label }}:
+                </label>
+                {{ field }}
+                {% if field.errors %}
+                    <div class="form-error">
+                        {% for error in field.errors %}
+                            {{ error }}
+                        {% endfor %}
+                    </div>
+                {% endif %}
+                {% if field.help_text %}
+                    <div class="form-help">
+                        {{ field.help_text }}
+                    </div>
+                {% endif %}
+            </div>
+        {% endfor %}
+        
+        <button type="submit">Добавить материал</button>
+    </form>
+    
+    <style>
+        .form-field {
+            margin-bottom: 15px;
+        }
+        .form-field.has-error input,
+        .form-field.has-error select {
+            border-color: red;
+            background-color: #fff0f0;
+        }
+        .form-label {
+            display: block;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        .form-input, select {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        textarea {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        .form-error {
+            color: red;
+            font-size: 12px;
+            margin-top: 5px;
+        }
+        .form-help {
+            color: gray;
+            font-size: 12px;
+            margin-top: 5px;
+        }
+        button {
+            background: #2c3e50;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        button:hover {
+            background: #34495e;
+        }
+    </style>
+{% endblock %}
