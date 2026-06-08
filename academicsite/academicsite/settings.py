@@ -26,6 +26,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'sites.apps.SitesConfig',
     'django_extensions',
+    'users',
 ]
 
 MIDDLEWARE = [
@@ -104,3 +105,17 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 # Default primary key field type
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+# Настройки авторизации
+LOGIN_REDIRECT_URL = 'home'
+LOGIN_URL = 'users:login'
+LOGOUT_REDIRECT_URL = 'users:login'
+
+AUTHENTICATION_BACKENDS = [
+    'users.authentication.EmailAuthBackend',           # Аутентификация по email
+    'django.contrib.auth.backends.ModelBackend',      # Стандартная аутентификация по username
+]
+
+EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+
+AUTH_USER_MODEL = 'users.User'

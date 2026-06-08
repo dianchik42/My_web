@@ -1,0 +1,51 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    <h1>Профиль пользователя</h1>
+    
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        
+        <div class="form-error">{{ form.non_field_errors }}</div>
+        
+        {% if user.photo %}
+            <div class="user-photo">
+                <img src="{{ user.photo.url }}" alt="Фото пользователя" width="150" style="border-radius: 10px;">
+            </div>
+        {% endif %}
+        
+        {% for field in form %}
+            <div class="form-field">
+                <label class="form-label" for="{{ field.id_for_label }}">
+                    {{ field.label }}:
+                </label>
+                {{ field }}
+                {% if field.errors %}
+                    <div class="form-error">
+                        {% for error in field.errors %}
+                            {{ error }}
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            </div>
+        {% endfor %}
+        
+        <button type="submit">Сохранить изменения</button>
+    </form>
+    
+    <hr>
+    <p>
+        <a href="{% url 'users:password_change' %}">Сменить пароль</a>
+    </p>
+    
+    <style>
+        .form-field { margin-bottom: 15px; }
+        .form-label { display: block; font-weight: bold; margin-bottom: 5px; }
+        .form-input { width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; }
+        .form-error { color: red; font-size: 12px; margin-top: 5px; }
+        button { background: #2c3e50; color: white; padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer; }
+        button:hover { background: #34495e; }
+        hr { margin: 20px 0; }
+        .user-photo { margin-bottom: 20px; }
+    </style>
+{% endblock %}

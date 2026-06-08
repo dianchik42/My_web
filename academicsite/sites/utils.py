@@ -8,7 +8,6 @@ menu = [
     {'title': 'Методические пособия', 'url_name': 'methodology'},
     {'title': 'Для учителей', 'url_name': 'for_teachers'},
     {'title': 'Обратная связь', 'url_name': 'contact'},
-    {'title': 'Войти', 'url_name': 'login'},
 ]
 
 
@@ -17,7 +16,7 @@ class DataMixin:
     
     def get_mixin_context(self, context, **kwargs):
         """Добавляет общие данные в контекст шаблона"""
-        context['menu'] = menu
+        context['mainmenu'] = menu
         context['cat_selected'] = None
         context.update(kwargs)
         return context

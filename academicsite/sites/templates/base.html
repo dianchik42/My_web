@@ -5,37 +5,130 @@
 <head>
     <meta charset="UTF-8">
     <title>{{ title }}</title>
-    <link type="text/css" href="{% static 'sites/css/styles.css' %}" rel="stylesheet" />
-    <link rel="shortcut icon" href="{% static 'sites/images/favicon.ico' %}" />
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: Arial, sans-serif; background: #f5f5f5; color: #333; font-size: 14px; }
+        
+        /* Шапка и меню */
+        .header { background: #2c3e50; padding: 15px 20px; }
+        #mainmenu { list-style: none; display: flex; align-items: center; gap: 20px; margin: 0; padding: 0; }
+        #mainmenu li { display: inline-block; }
+        #mainmenu a { color: white; text-decoration: none; font-size: 14px; }
+        #mainmenu a:hover { color: #3498db; }
+        #mainmenu .last { margin-left: auto; }
+        .clear { clear: both; }
+        
+        /* Контент */
+        .content { max-width: 1200px; margin: 20px auto; padding: 0 20px; overflow: hidden; }
+        
+        /* Боковое меню */
+        .sidebar { float: left; width: 250px; background: white; padding: 15px; border-radius: 5px; margin-right: 20px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        .sidebar h3 { margin-bottom: 10px; color: #2c3e50; font-size: 16px; border-bottom: 2px solid #3498db; padding-bottom: 5px; }
+        .sidebar ul { list-style: none; margin: 0; padding: 0; }
+        .sidebar li { margin: 8px 0; }
+        .sidebar a { color: #2c3e50; text-decoration: none; }
+        .sidebar a:hover { color: #3498db; }
+        .sidebar .selected { color: #e74c3c; font-weight: bold; }
+        
+        /* Основной контент */
+        .main-content { margin-left: 290px; }
+        
+        /* Карточки материалов */
+        .post-item { background: white; padding: 20px; margin-bottom: 20px; border-radius: 5px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); overflow: hidden; }
+        .article-panel { background: #ecf0f1; padding: 8px 12px; margin-bottom: 15px; border-radius: 5px; font-size: 12px; overflow: hidden; }
+        .article-panel .first { float: left; }
+        .article-panel .last { float: right; }
+        .post-item h2 { margin: 10px 0; font-size: 20px; }
+        .post-item h2 a { color: #2c3e50; text-decoration: none; }
+        .post-item h2 a:hover { color: #3498db; }
+        .post-item p { line-height: 1.5; margin: 10px 0; }
+        .tags-list { margin: 10px 0; }
+        .tags-list a { background: #ecf0f1; padding: 3px 8px; border-radius: 3px; font-size: 11px; color: #2c3e50; text-decoration: none; margin-right: 5px; display: inline-block; }
+        .tags-list a:hover { background: #3498db; color: white; }
+        hr { margin: 15px 0; border: none; border-top: 1px solid #ddd; clear: both; }
+        
+        /* Формы */
+        .form-field { margin-bottom: 15px; }
+        .form-label { display: block; font-weight: bold; margin-bottom: 5px; }
+        .form-input { width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; }
+        .form-error { color: red; font-size: 12px; margin-top: 5px; }
+        button { background: #2c3e50; color: white; padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer; font-size: 14px; }
+        button:hover { background: #34495e; }
+
+        /* Стили для категорий */
+        .sidebar .category-link {
+            color: #2c3e50;
+            text-decoration: none;
+            display: block;
+            padding: 5px 0;
+            transition: all 0.3s ease;
+        }
+
+        .sidebar .category-link:hover {
+            color: #3498db;
+            padding-left: 5px;
+        }
+
+        .sidebar .selected {
+            color: #e74c3c;
+            font-weight: bold;
+            display: block;
+            padding: 5px 0;
+        }
+        
+        /* Заголовки */
+        h1 { font-size: 24px; margin-bottom: 20px; color: #2c3e50; }
+        h2 { font-size: 18px; }
+        
+        /* Ссылки */
+        a { color: #3498db; text-decoration: none; }
+        a:hover { text-decoration: underline; }
+    </style>
 </head>
 <body>
-    <ul>
-        {% for item in menu %}
-        <li>
-            <a href="{% url item.url_name %}">{{ item.title }}</a>
-        </li>
-        {% endfor %}
-    </ul>
-
-    <!-- Боковое меню с категориями -->
-    <h3>Категории</h3>
-    <ul>
-        {% if cat_selected == 0 or cat_selected is None %}
-            <li class="selected">Все категории</li>
-        {% else %}
-            <li><a href="{% url 'home' %}">Все категории</a></li>
-        {% endif %}
-        {% show_categories cat_selected %}
-    </ul>
-
-    <!-- НОВОЕ: вывод тегов -->
-    {% show_tags %}
-
-    <!-- Основной контент -->
-    <div class="content">
-        {% block content %}
-        {% endblock %}
+    <div class="header">
+        <ul id="mainmenu" class="mainmenu">
+            <li><a href="{% url 'home' %}">Главная</a></li>
+            
+            {% for m in mainmenu %}
+                <li><a href="{% url m.url_name %}">{{ m.title }}</a></li>
+            {% endfor %}
+            
+            {% if user.is_authenticated %}
+                <li class="last">
+                    <a href="{% url 'users:profile' %}">{{ user.username }}</a> |
+                    <a href="{% url 'users:logout' %}">Выйти</a>
+                </li>
+            {% else %}
+                <li class="last">
+                    <a href="{% url 'users:login' %}">Войти</a> |
+                    <a href="{% url 'users:register' %}">Регистрация</a>
+                </li>
+            {% endif %}
+        </ul>
+        <div class="clear"></div>
     </div>
 
+    <div class="content">
+        <div class="sidebar">
+            <h3>Категории</h3>
+            <ul>
+                {% if cat_selected == 0 %}
+                    <li class="selected">Все категории</li>
+                {% else %}
+                    <li><a href="{% url 'home' %}">Все категории</a></li>
+                {% endif %}
+                {% show_categories cat_selected %}
+            </ul>
+            
+            <h3>Теги</h3>
+            {% show_tags %}
+        </div>
+        
+        <div class="main-content">
+            {% block content %}
+            {% endblock %}
+        </div>
+    </div>
 </body>
 </html>

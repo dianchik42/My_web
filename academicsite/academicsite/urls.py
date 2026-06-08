@@ -12,6 +12,7 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('', include('sites.urls')),
     path('about/', views.about, name='about'),
+    path('users/', include('users.urls', namespace='users')),
 ]
 
 # РАЗДАЧА МЕДИА-ФАЙЛОВ (ИЗОБРАЖЕНИЙ) В РЕЖИМЕ ОТЛАДКИ

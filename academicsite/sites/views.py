@@ -8,7 +8,7 @@ from django.urls import reverse_lazy
 from .models import Material, Category, TagPost
 from .forms import AddMaterialModelForm
 from .utils import DataMixin, menu
-
+from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin
 # Данные для меню
 menu = [
     {'title': 'Главная', 'url_name': 'home'},
@@ -147,7 +147,7 @@ def add_material(request):
     })
 
 
-class AddMaterialCreateView(DataMixin, CreateView):
+class AddMaterialCreateView(LoginRequiredMixin, DataMixin, CreateView):
     model = Material
     form_class = AddMaterialModelForm
     template_name = 'sites/add_material_model.html'
@@ -158,36 +158,29 @@ class AddMaterialCreateView(DataMixin, CreateView):
         return self.get_mixin_context(context, title='Добавление материала')
 
 
-class UpdateMaterialView(DataMixin, UpdateView):
+class UpdateMaterialView(PermissionRequiredMixin, LoginRequiredMixin, DataMixin, UpdateView):
     model = Material
     form_class = AddMaterialModelForm
     template_name = 'sites/edit_material.html'
     success_url = reverse_lazy('home')
     pk_url_kwarg = 'pk'
+    permission_required = 'sites.change_material'
     
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         return self.get_mixin_context(context, title='Редактирование материала')
-    
-    def form_valid(self, form):
-        material = form.save()
-        return super().form_valid(form)
 
 
-class DeleteMaterialView(DataMixin, DeleteView):
+class DeleteMaterialView(PermissionRequiredMixin, LoginRequiredMixin, DataMixin, DeleteView):
     model = Material
     template_name = 'sites/delete_material.html'
     success_url = reverse_lazy('home')
     pk_url_kwarg = 'pk'
+    permission_required = 'sites.delete_material'
     
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         return self.get_mixin_context(context, title='Удаление материала')
-    
-    def delete(self, request, *args, **kwargs):
-        material = self.get_object()
-        print(f"Удалён материал: {material.title} (ID: {material.id})")
-        return super().delete(request, *args, **kwargs)
 
 
 def methodology(request):
