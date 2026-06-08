@@ -8,18 +8,17 @@ register_converter(converters.PositiveIntConverter, 'posint')
 
 urlpatterns = [
     # Основные страницы
-    path('', views.index, name='home'),
+    path('', views.HomeView.as_view(), name='home'),
     path('admin/', admin.site.urls),
     path('about/', views.about, name='about'),
-    path('material/<slug:material_slug>/', views.show_material, name='material'),
+    path('material/<slug:material_slug>/', views.MaterialDetailView.as_view(), name='material'),
     path('methodology/', views.methodology, name='methodology'),
     path('for_teachers/', views.for_teachers, name='for_teachers'),
     path('contact/', views.contact, name='contact'),
     path('login/', views.login, name='login'),
     
-    path('category/<slug:cat_slug>/', views.show_category, name='category'),
-    path('tag/<slug:tag_slug>/', views.show_tag, name='tag'),
-    
+    path('category/<slug:cat_slug>/', views.CategoryMaterialsView.as_view(), name='category'),
+    path('tag/<slug:tag_slug>/', views.TagMaterialsView.as_view(), name='tag'),
     path('add-page/', views.addpage, name='add_page'),
     path('upload/', views.upload_file, name='upload_file'),
 
@@ -46,7 +45,9 @@ urlpatterns = [
 
     # ФОРМЫ
     path('add-material/', views.add_material, name='add_material'),
-    path('add-material-model/', views.add_material_model, name='add_material_model'),
-]
+    path('add-material-model/', views.AddMaterialCreateView.as_view(), name='add_material_model'),
+    path('edit/<int:pk>/', views.UpdateMaterialView.as_view(), name='edit_material'),
+    path('delete/<int:pk>/', views.DeleteMaterialView.as_view(), name='delete_material'),
+    ]
 
 handler404 = 'sites.views.page_not_found'

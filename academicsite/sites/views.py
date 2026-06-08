@@ -1,15 +1,13 @@
 from django.shortcuts import redirect, render, get_object_or_404
 from django.http import HttpResponse, HttpResponseNotFound, HttpResponseRedirect
 from django.views.decorators.http import require_http_methods
-from django.db.models import Q, F, Count, Avg, Max, Min, Sum, Value
-from django.db.models.functions import Length
-from .models import Material, Category, TagPost, MaterialExtraInfo
+from django.views import View
+from django.views.generic import TemplateView, ListView, DetailView
+from django.views.generic.edit import FormView, CreateView, UpdateView, DeleteView
+from django.urls import reverse_lazy
+from .models import Material, Category, TagPost
 from .forms import AddMaterialModelForm
-from django.shortcuts import redirect
-import uuid
-import os
-from django.conf import settings
-from .forms import UploadFileForm
+from .utils import DataMixin, menu
 
 # Данные для меню
 menu = [
@@ -25,16 +23,18 @@ menu = [
 ]
 
 
-def index(request):
-    """Главная страница"""
-    posts = Material.published.all().select_related('cat').prefetch_related('tags')
-    data = {
-        'title': 'Главная страница',
-        'menu': menu,
-        'posts': posts,
-        'cat_selected': 0,
-    }
-    return render(request, 'sites/index.html', context=data)
+class HomeView(DataMixin, ListView):
+    model = Material
+    template_name = 'sites/index.html'
+    context_object_name = 'posts'
+    paginate_by = 3
+    
+    def get_queryset(self):
+        return Material.published.all().select_related('cat').prefetch_related('tags')
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        return self.get_mixin_context(context, title='Главная страница', cat_selected=0)
 
 
 def about(request):
@@ -63,41 +63,54 @@ def login(request):
 
 
 # отображение по категориям
-def show_category(request, cat_slug):
-    """Отображение материалов по категории"""
-    category = get_object_or_404(Category, slug=cat_slug)
-    posts = Material.published.filter(cat=category)
-    data = {
-        'title': f'Категория: {category.name}',
-        'menu': menu,
-        'posts': posts,
-        'cat_selected': category.pk,
-    }
-    return render(request, 'sites/index.html', context=data)
+class CategoryMaterialsView(DataMixin, ListView):
+    template_name = 'sites/index.html'
+    context_object_name = 'posts'
+    allow_empty = False
+    paginate_by = 3
+    
+    def get_queryset(self):
+        self.category = get_object_or_404(Category, slug=self.kwargs['cat_slug'])
+        return Material.published.filter(cat=self.category).select_related('cat')
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        return self.get_mixin_context(context, title=f'Категория: {self.category.name}', cat_selected=self.category.pk)
 
-def show_tag(request, tag_slug):
-    """Отображение материалов по тегу"""
-    tag = get_object_or_404(TagPost, slug=tag_slug)
-    posts = tag.materials.filter(is_published=Material.Status.PUBLISHED)
-    data = {
-        'title': f'Тег: {tag.tag}',
-        'menu': menu,
-        'posts': posts,
-        'cat_selected': None,
-    }
-    return render(request, 'sites/index.html', context=data)
 
-def show_material(request, material_slug):
-    """Отображение отдельного материала"""
-    material = get_object_or_404(Material, slug=material_slug, is_published=Material.Status.PUBLISHED)
-    material.increment_views()
-    data = {
-        'material': material,
-        'title': material.title,
-        'menu': menu,
-        'cat_selected': material.cat.pk if material.cat else None,
-    }
-    return render(request, 'sites/material_detail.html', context=data)
+class TagMaterialsView(DataMixin, ListView):
+    template_name = 'sites/index.html'
+    context_object_name = 'posts'
+    allow_empty = False
+    paginate_by = 3
+    
+    def get_queryset(self):
+        self.tag = get_object_or_404(TagPost, slug=self.kwargs['tag_slug'])
+        return self.tag.materials.filter(is_published=Material.Status.PUBLISHED).select_related('cat')
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        return self.get_mixin_context(context, title=f'Тег: {self.tag.tag}')
+
+
+class MaterialDetailView(DataMixin, DetailView):
+    model = Material
+    template_name = 'sites/material_detail.html'
+    context_object_name = 'material'
+    slug_url_kwarg = 'material_slug'
+    
+    def get_queryset(self):
+        return Material.published.all()
+    
+    def get_object(self, queryset=None):
+        material = super().get_object(queryset)
+        material.increment_views()
+        return material
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        cat_selected = self.object.cat.pk if self.object.cat else None
+        return self.get_mixin_context(context, title=self.object.title, cat_selected=cat_selected)
 
 
 def materials(request):
@@ -133,24 +146,49 @@ def add_material(request):
         'menu': menu
     })
 
-def add_material_model(request):
-    if request.method == 'POST':
-        form = AddMaterialModelForm(request.POST, request.FILES)
-        if form.is_valid():
-            material = form.save()
-            print(f"✅ Сохранён материал: {material.title}")
-            print(f"✅ Категория: {material.cat.name if material.cat else 'НЕ УСТАНОВЛЕНА'}")
-            return redirect('home')
-        else:
-            print("Ошибки формы:", form.errors)
-    else:
-        form = AddMaterialModelForm()
+
+class AddMaterialCreateView(DataMixin, CreateView):
+    model = Material
+    form_class = AddMaterialModelForm
+    template_name = 'sites/add_material_model.html'
+    success_url = reverse_lazy('home')
     
-    return render(request, 'sites/add_material_model.html', {
-        'form': form,
-        'title': 'Добавление материала (связанная форма)',
-        'menu': menu
-    })
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        return self.get_mixin_context(context, title='Добавление материала')
+
+
+class UpdateMaterialView(DataMixin, UpdateView):
+    model = Material
+    form_class = AddMaterialModelForm
+    template_name = 'sites/edit_material.html'
+    success_url = reverse_lazy('home')
+    pk_url_kwarg = 'pk'
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        return self.get_mixin_context(context, title='Редактирование материала')
+    
+    def form_valid(self, form):
+        material = form.save()
+        return super().form_valid(form)
+
+
+class DeleteMaterialView(DataMixin, DeleteView):
+    model = Material
+    template_name = 'sites/delete_material.html'
+    success_url = reverse_lazy('home')
+    pk_url_kwarg = 'pk'
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        return self.get_mixin_context(context, title='Удаление материала')
+    
+    def delete(self, request, *args, **kwargs):
+        material = self.get_object()
+        print(f"Удалён материал: {material.title} (ID: {material.id})")
+        return super().delete(request, *args, **kwargs)
+
 
 def methodology(request):
     """Страница с методическими пособиями"""

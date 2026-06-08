@@ -37,4 +37,48 @@
     {% empty %}
         <p>Материалов пока нет.</p>
     {% endfor %}
+    
+    {# БЛОК ПАГИНАЦИИ #}
+    {% if is_paginated %}
+        <nav class="list-pages">
+            <ul style="display: flex; list-style: none; justify-content: center; padding: 0; gap: 10px; margin-top: 30px;">
+                
+                {# Ссылка на предыдущую страницу #}
+                {% if page_obj.has_previous %}
+                    <li class="page-num">
+                        <a href="?page={{ page_obj.previous_page_number }}" style="padding: 8px 15px; text-decoration: none; background: #2c3e50; color: white; border-radius: 4px;">&lt;</a>
+                    </li>
+                {% endif %}
+                
+                {# Номера страниц (только 2 слева и 2 справа от текущей) #}
+                {% for p in paginator.page_range %}
+                    {% if page_obj.number == p %}
+                        <li class="page-num page-num-selected" style="padding: 8px 15px; background: #3498db; color: white; border-radius: 4px;">{{ p }}</li>
+                    {% elif p >= page_obj.number|add:-2 and p <= page_obj.number|add:2 %}
+                        <li class="page-num">
+                            <a href="?page={{ p }}" style="padding: 8px 15px; text-decoration: none; background: #ecf0f1; color: #2c3e50; border-radius: 4px;">{{ p }}</a>
+                        </li>
+                    {% endif %}
+                {% endfor %}
+                
+                {# Ссылка на следующую страницу #}
+                {% if page_obj.has_next %}
+                    <li class="page-num">
+                        <a href="?page={{ page_obj.next_page_number }}" style="padding: 8px 15px; text-decoration: none; background: #2c3e50; color: white; border-radius: 4px;">&gt;</a>
+                    </li>
+                {% endif %}
+                
+            </ul>
+        </nav>
+    {% endif %}
+    
+    <style>
+        .list-pages ul li {
+            display: inline-block;
+        }
+        .list-pages a:hover {
+            background: #3498db !important;
+            color: white !important;
+        }
+    </style>
 {% endblock %}
