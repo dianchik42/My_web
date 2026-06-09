@@ -48,6 +48,11 @@ urlpatterns = [
     path('add-material-model/', views.AddMaterialCreateView.as_view(), name='add_material_model'),
     path('edit/<int:pk>/', views.UpdateMaterialView.as_view(), name='edit_material'),
     path('delete/<int:pk>/', views.DeleteMaterialView.as_view(), name='delete_material'),
+
+    # Комментарии и лайки
+    path('comment/<int:material_pk>/', views.add_comment, name='add_comment'),
+    path('like/<int:material_pk>/', views.toggle_like, name='toggle_like'),
+    path('comment/delete/<int:comment_pk>/', views.delete_comment, name='delete_comment'),
     ]
 
 handler404 = 'sites.views.page_not_found'

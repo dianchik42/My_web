@@ -21,3 +21,10 @@ def show_tags():
         materials__is_published=1
     ).distinct()
     return {'tags': tags}
+
+@register.filter
+def is_liked_by(material, user):
+    """Проверяет, поставил ли пользователь лайк материалу"""
+    if user.is_authenticated:
+        return material.likes.filter(user=user).exists()
+    return False

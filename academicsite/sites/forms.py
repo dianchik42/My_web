@@ -156,3 +156,13 @@ class UploadFileForm(forms.Form):
         widget=forms.FileInput(attrs={'class': 'form-input'}),
         help_text="Максимальный размер файла: 10 МБ"
     )
+
+class CommentForm(forms.Form):
+    content = forms.CharField(
+        label='Ваш комментарий',
+        widget=forms.Textarea(attrs={
+            'class': 'form-input',
+            'rows': 4,
+            'placeholder': 'Напишите ваш комментарий...'
+        })
+    )

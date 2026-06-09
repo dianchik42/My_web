@@ -2,6 +2,7 @@ from django.contrib import admin
 from django.contrib import messages
 from django.utils.html import mark_safe
 from .models import Material, Category, TagPost, MaterialExtraInfo
+from .models import Material, Category, TagPost, MaterialExtraInfo, Comment, Like
 
 class ViewsCountFilter(admin.SimpleListFilter):
     title = 'Количество просмотров'
@@ -113,3 +114,20 @@ class MaterialExtraInfoAdmin(admin.ModelAdmin):
     list_display_links = ('id',)
     list_editable = ('difficulty_level', 'duration_minutes', 'downloads_count')
     search_fields = ('difficulty_level',)
+
+@admin.register(Comment)
+class CommentAdmin(admin.ModelAdmin):
+    list_display = ('id', 'author', 'material', 'content_preview', 'time_create', 'is_approved')
+    list_display_links = ('id',)
+    list_filter = ('is_approved', 'time_create')
+    search_fields = ('author__username', 'material__title', 'content')
+    
+    def content_preview(self, obj):
+        return obj.content[:50] + '...' if len(obj.content) > 50 else obj.content
+    content_preview.short_description = 'Текст'
+
+
+@admin.register(Like)
+class LikeAdmin(admin.ModelAdmin):
+    list_display = ('id', 'user', 'material', 'created_at')
+    list_display_links = ('id',)

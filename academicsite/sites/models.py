@@ -133,3 +133,65 @@ class Material(models.Model):
         """Увеличивает счётчик просмотров"""
         self.views_count += 1
         self.save(update_fields=['views_count'])
+
+    def user_liked(self, user):
+        """Проверяет, поставил ли пользователь лайк этому материалу"""
+        if user.is_authenticated:
+            return self.likes.filter(user=user).exists()
+        return False
+
+    def likes_count(self):
+        """Возвращает количество лайков у материала"""
+        return self.likes.count()
+
+
+class Comment(models.Model):
+    """Модель комментариев к материалам"""
+    material = models.ForeignKey(
+        Material,
+        on_delete=models.CASCADE,
+        related_name='comments',
+        verbose_name='Материал'
+    )
+    author = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='comments',
+        verbose_name='Автор'
+    )
+    content = models.TextField(verbose_name='Текст комментария', max_length=2000)
+    time_create = models.DateTimeField(auto_now_add=True, verbose_name='Время создания')
+    is_approved = models.BooleanField(default=True, verbose_name='Одобрен')  # True = сразу публикуется
+    
+    class Meta:
+        ordering = ['-time_create']
+        verbose_name = 'Комментарий'
+        verbose_name_plural = 'Комментарии'
+    
+    def __str__(self):
+        return f'Комментарий от {self.author.username} к {self.material.title[:30]}'
+
+
+class Like(models.Model):
+    """Модель лайков для материалов"""
+    material = models.ForeignKey(
+        Material,
+        on_delete=models.CASCADE,
+        related_name='likes',
+        verbose_name='Материал'
+    )
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='likes',
+        verbose_name='Пользователь'
+    )
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name='Время создания')
+    
+    class Meta:
+        unique_together = ('material', 'user')  # Один пользователь может поставить только один лайк на материал
+        verbose_name = 'Лайк'
+        verbose_name_plural = 'Лайки'
+    
+    def __str__(self):
+        return f'{self.user.username} лайкнул {self.material.title[:30]}'

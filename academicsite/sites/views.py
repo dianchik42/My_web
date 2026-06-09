@@ -9,6 +9,10 @@ from .models import Material, Category, TagPost
 from .forms import AddMaterialModelForm
 from .utils import DataMixin, menu
 from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin
+from .models import Material, Comment, Like
+from .forms import CommentForm
+from django.contrib.auth.decorators import login_required
+
 # Данные для меню
 menu = [
     {'title': 'Главная', 'url_name': 'home'},
@@ -337,3 +341,48 @@ def upload_file(request):
         'uploaded_filename': uploaded_filename,
         'error_message': error_message
     })
+
+@login_required
+def add_comment(request, material_pk):
+    """Добавление комментария к материалу"""
+    material = get_object_or_404(Material, pk=material_pk)
+    
+    if request.method == 'POST':
+        form = CommentForm(request.POST)
+        if form.is_valid():
+            Comment.objects.create(
+                material=material,
+                author=request.user,
+                content=form.cleaned_data['content']
+            )
+    return redirect('material', material_slug=material.slug)
+
+
+@login_required
+def toggle_like(request, material_pk):
+    """Поставить или убрать лайк"""
+    material = get_object_or_404(Material, pk=material_pk)
+    
+    # Проверяем, есть ли уже лайк от этого пользователя
+    like = Like.objects.filter(material=material, user=request.user).first()
+    
+    if like:
+        # Если лайк есть - удаляем (убираем лайк)
+        like.delete()
+    else:
+        # Если лайка нет - создаём (ставим лайк)
+        Like.objects.create(material=material, user=request.user)
+    
+    return redirect('material', material_slug=material.slug)
+
+
+@login_required
+def delete_comment(request, comment_pk):
+    """Удаление комментария (только автор комментария или автор материала)"""
+    comment = get_object_or_404(Comment, pk=comment_pk)
+    
+    # Проверяем, имеет ли пользователь право удалить комментарий
+    if request.user == comment.author or request.user == comment.material.author or request.user.is_superuser:
+        comment.delete()
+    
+    return redirect('material', material_slug=comment.material.slug)
