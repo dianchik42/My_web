@@ -148,6 +148,7 @@ def add_material(request):
 
 
 class AddMaterialCreateView(LoginRequiredMixin, DataMixin, CreateView):
+    """Класс представления для добавления нового материала"""
     model = Material
     form_class = AddMaterialModelForm
     template_name = 'sites/add_material_model.html'
@@ -156,6 +157,11 @@ class AddMaterialCreateView(LoginRequiredMixin, DataMixin, CreateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         return self.get_mixin_context(context, title='Добавление материала')
+    
+    def form_valid(self, form):
+        """Автоматически назначает автором текущего пользователя"""
+        form.instance.author = self.request.user
+        return super().form_valid(form)
 
 
 class UpdateMaterialView(PermissionRequiredMixin, LoginRequiredMixin, DataMixin, UpdateView):

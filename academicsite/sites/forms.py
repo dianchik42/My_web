@@ -72,7 +72,7 @@ class AddMaterialForm(forms.Form):
 class AddMaterialModelForm(forms.ModelForm):
     class Meta:
         model = Material
-        fields = ['title', 'slug', 'content', 'short_description', 'author', 
+        fields = ['title', 'slug', 'content', 'short_description', 
                   'is_published', 'cat', 'tags', 'extra_info', 'image']
         
         labels = {

@@ -5,18 +5,11 @@
     
     <div class="article-panel">
         <p>Категория: <a href="{% url 'category' material.cat.slug %}">{{ material.cat.name }}</a></p>
-        <p>Автор: {{ material.author|default:"Не указан" }}</p>
+        <p>Автор: {{ material.author.username|default:"Не указан" }}</p>
         <p>Создано: {{ material.time_create|date:"d-m-Y H:i" }}</p>
         <p>Просмотров: {{ material.views_count }}</p>
     </div>
     
-    {% if material.image %}
-        <div class="material-image">
-            <img src="{{ material.image.url }}" alt="{{ material.title }}" style="max-width: 100%; height: auto;">
-        </div>
-    {% endif %}
-
-    <!-- вывод тегов -->
     {% with material.tags.all as tags %}
         {% if tags %}
             <div class="tags-list">
@@ -28,7 +21,6 @@
         {% endif %}
     {% endwith %}
     
-    <!-- Дополнительная информация (OneToOne) -->
     {% if material.extra_info %}
         <div class="extra-info">
             <h3>Дополнительная информация:</h3>
@@ -39,28 +31,17 @@
             </ul>
         </div>
     {% endif %}
-
-    {% if user.is_authenticated %}
-        <div class="admin-actions" style="margin-top: 20px; padding-top: 20px; border-top: 1px solid #ddd;">
-            {% if perms.sites.change_material %}
-                <a href="{% url 'edit_material' material.pk %}" style="background: #2c3e50; color: white; padding: 8px 15px; text-decoration: none; border-radius: 4px; margin-right: 10px;">
-                    ✏️ Редактировать
-                </a>
-            {% endif %}
-            {% if perms.sites.delete_material %}
-                <a href="{% url 'delete_material' material.pk %}" style="background: #dc3545; color: white; padding: 8px 15px; text-decoration: none; border-radius: 4px;">
-                    🗑️ Удалить
-                </a>
-            {% endif %}
-        </div>
+    
+    {% if material.image %}
+        <p><img src="{{ material.image.url }}" alt="{{ material.title }}" style="max-width: 100%;"></p>
     {% endif %}
     
     <div class="content-text">
         {{ material.content|linebreaks }}
     </div>
     
-    <p><a href="{% url 'home' %}">← Назад к списку</a></p>
-    {% if user.is_authenticated %}
+    <!-- ТОЛЬКО ОДИН БЛОК С КНОПКАМИ – ЗДЕСЬ -->
+    {% if user == material.author or user.is_superuser %}
         <div class="admin-actions" style="margin-top: 20px; padding-top: 20px; border-top: 1px solid #ddd;">
             <a href="{% url 'edit_material' material.pk %}" style="background: #2c3e50; color: white; padding: 8px 15px; text-decoration: none; border-radius: 4px; margin-right: 10px;">
                 ✏️ Редактировать
@@ -70,4 +51,6 @@
             </a>
         </div>
     {% endif %}
+    
+    <p><a href="{% url 'home' %}">← Назад к списку</a></p>
 {% endblock %}
