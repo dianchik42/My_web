@@ -1,5 +1,6 @@
 from .models import Category, TagPost
 from django.db.models import Count
+from django.core.exceptions import PermissionDenied
 
 menu = [
     {'title': 'Главная', 'url_name': 'home'},
@@ -20,3 +21,16 @@ class DataMixin:
         context['cat_selected'] = None
         context.update(kwargs)
         return context
+
+class UserIsAuthorMixin:
+    """Миксин для проверки, что текущий пользователь является автором материала"""
+    
+    def dispatch(self, request, *args, **kwargs):
+        obj = self.get_object()
+        # Суперпользователь может всё
+        if request.user.is_superuser:
+            return super().dispatch(request, *args, **kwargs)
+        # Обычный пользователь может редактировать/удалять только свои материалы
+        if obj.author != request.user:
+            raise PermissionDenied('Вы не можете редактировать или удалять чужие материалы')
+        return super().dispatch(request, *args, **kwargs)

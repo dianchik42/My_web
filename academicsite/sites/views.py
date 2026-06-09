@@ -7,7 +7,7 @@ from django.views.generic.edit import FormView, CreateView, UpdateView, DeleteVi
 from django.urls import reverse_lazy
 from .models import Material, Category, TagPost
 from .forms import AddMaterialModelForm
-from .utils import DataMixin, menu
+from .utils import DataMixin, menu, UserIsAuthorMixin
 from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin
 from .models import Material, Comment, Like
 from .forms import CommentForm
@@ -168,7 +168,7 @@ class AddMaterialCreateView(LoginRequiredMixin, DataMixin, CreateView):
         return super().form_valid(form)
 
 
-class UpdateMaterialView(PermissionRequiredMixin, LoginRequiredMixin, DataMixin, UpdateView):
+class UpdateMaterialView(UserIsAuthorMixin, PermissionRequiredMixin, LoginRequiredMixin, DataMixin, UpdateView):
     model = Material
     form_class = AddMaterialModelForm
     template_name = 'sites/edit_material.html'
@@ -181,7 +181,7 @@ class UpdateMaterialView(PermissionRequiredMixin, LoginRequiredMixin, DataMixin,
         return self.get_mixin_context(context, title='Редактирование материала')
 
 
-class DeleteMaterialView(PermissionRequiredMixin, LoginRequiredMixin, DataMixin, DeleteView):
+class DeleteMaterialView(UserIsAuthorMixin, PermissionRequiredMixin, LoginRequiredMixin, DataMixin, DeleteView):
     model = Material
     template_name = 'sites/delete_material.html'
     success_url = reverse_lazy('home')
